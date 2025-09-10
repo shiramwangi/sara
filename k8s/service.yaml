@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sara-service
+  namespace: sara
+  labels:
+    app: sara-backend
+spec:
+  selector:
+    app: sara-backend
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP

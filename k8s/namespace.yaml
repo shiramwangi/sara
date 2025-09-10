@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sara
+  labels:
+    name: sara
+    app: sara-ai-receptionist

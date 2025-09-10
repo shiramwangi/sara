@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sara-backend
+  namespace: sara
+  labels:
+    app: sara-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sara-backend
+  template:
+    metadata:
+      labels:
+        app: sara-backend
+    spec:
+      containers:
+      - name: sara-backend
+        image: sara-ai-receptionist:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: DATABASE_URL
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: OPENAI_API_KEY
+        - name: TWILIO_ACCOUNT_SID
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: TWILIO_ACCOUNT_SID
+        - name: TWILIO_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: TWILIO_AUTH_TOKEN
+        - name: TWILIO_PHONE_NUMBER
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: TWILIO_PHONE_NUMBER
+        - name: WHATSAPP_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: WHATSAPP_ACCESS_TOKEN
+        - name: WHATSAPP_PHONE_NUMBER_ID
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: WHATSAPP_PHONE_NUMBER_ID
+        - name: WHATSAPP_VERIFY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: WHATSAPP_VERIFY_TOKEN
+        - name: GOOGLE_CALENDAR_ID
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: GOOGLE_CALENDAR_ID
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: SMTP_USERNAME
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: SMTP_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: SECRET_KEY
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: ENCRYPTION_KEY
+        envFrom:
+        - configMapRef:
+            name: sara-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: credentials
+          mountPath: /app/credentials.json
+          subPath: credentials.json
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: credentials
+        secret:
+          secretName: sara-credentials
+      - name: logs
+        emptyDir: {}
+      initContainers:
+      - name: db-migration
+        image: sara-ai-receptionist:latest
+        command: ["alembic", "upgrade", "head"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sara-secrets
+              key: DATABASE_URL
