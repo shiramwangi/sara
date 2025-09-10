@@ -1,0 +1,1 @@
+an AI receptionist — answers inbound voice & message requests, handles FAQs, and for actionable requests (bookings / emails / follow ups) performs them reliably through Google Calendar, Email, and WhatsApp/SMS. All interactions are logged and auditable.
