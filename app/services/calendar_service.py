@@ -7,6 +7,7 @@ import structlog
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -35,25 +36,48 @@ class CalendarService:
         """Authenticate with Google Calendar API"""
         try:
             creds = None
-            token_file = 'token.json'
             
-            # Load existing credentials
-            if os.path.exists(token_file):
-                creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-            
-            # If no valid credentials, get new ones
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                else:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        settings.google_calendar_credentials_file, SCOPES)
-                    creds = flow.run_local_server(port=0)
+            # Prefer service account if provided (server-friendly)
+            if settings.google_service_account_file or settings.google_service_account_info:
+                try:
+                    if settings.google_service_account_info:
+                        service_account_info = json.loads(settings.google_service_account_info)
+                        creds = ServiceAccountCredentials.from_service_account_info(
+                            service_account_info,
+                            scopes=SCOPES
+                        )
+                    else:
+                        creds = ServiceAccountCredentials.from_service_account_file(
+                            settings.google_service_account_file,
+                            scopes=SCOPES
+                        )
+                    # Optional domain-wide delegation / user impersonation
+                    if settings.google_calendar_delegated_user:
+                        creds = creds.with_subject(settings.google_calendar_delegated_user)
+                    logger.info("Google Calendar authenticated via service account")
+                except Exception as e:
+                    logger.error("Service account auth failed, falling back to OAuth client flow", error=str(e))
+                    creds = None
+
+            if creds is None:
+                token_file = 'token.json'
+                # Load existing user credentials
+                if os.path.exists(token_file):
+                    creds = Credentials.from_authorized_user_file(token_file, SCOPES)
                 
-                # Save credentials for next run
-                with open(token_file, 'w') as token:
-                    token.write(creds.to_json())
-            
+                # If no valid credentials, run OAuth client flow (interactive; not for production pods)
+                if not creds or not creds.valid:
+                    if creds and creds.expired and creds.refresh_token:
+                        creds.refresh(Request())
+                    else:
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                            settings.google_calendar_credentials_file, SCOPES)
+                        # Note: This opens a local server; use only for local/dev
+                        creds = flow.run_local_server(port=0)
+                    # Save credentials for next run
+                    with open(token_file, 'w') as token:
+                        token.write(creds.to_json())
+
             self.service = build('calendar', 'v3', credentials=creds)
             logger.info("Google Calendar authentication successful")
             

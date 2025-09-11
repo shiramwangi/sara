@@ -130,14 +130,14 @@ async def process_voice_interaction(
             await handle_faq_intent(intent_result, interaction, db)
         
         # Update interaction with response
-        interaction.response_text = response.text
+        interaction.response_text = response["text"]
         interaction.status = InteractionStatus.COMPLETED
         
         # Send response back to caller
         comm_service = CommunicationService()
         await comm_service.send_voice_response(
             to_number=webhook_request.from_number,
-            response_text=response.text
+            response_text=response["text"]
         )
         
         db.commit()

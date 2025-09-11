@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     # Google Calendar Configuration
     google_calendar_credentials_file: str = Field("credentials.json", env="GOOGLE_CALENDAR_CREDENTIALS_FILE")
     google_calendar_id: str = Field(..., env="GOOGLE_CALENDAR_ID")
+    # Optional: Service Account auth (preferred for server environments)
+    google_service_account_file: Optional[str] = Field(None, env="GOOGLE_SERVICE_ACCOUNT_FILE")
+    google_service_account_info: Optional[str] = Field(None, env="GOOGLE_SERVICE_ACCOUNT_INFO")  # JSON string
+    google_calendar_delegated_user: Optional[str] = Field(None, env="GOOGLE_CALENDAR_DELEGATED_USER")
     
     # Email Configuration
     smtp_server: str = Field("smtp.gmail.com", env="SMTP_SERVER")

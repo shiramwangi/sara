@@ -10,7 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
-from app.database import get_db, Base
+from app.database import get_db
+from app.models import Base
 from app.models import Interaction, KnowledgeBase, CalendarAvailability
 
 # Test database URL
