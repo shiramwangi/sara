@@ -30,7 +30,11 @@ class CalendarService:
     def __init__(self):
         self.service = None
         self.calendar_id = settings.google_calendar_id
-        self._authenticate()
+        # In debug mode, skip external auth to avoid network/browser interaction
+        if not settings.debug:
+            self._authenticate()
+        else:
+            logger.info("DEBUG mode: Skipping Google Calendar authentication (simulated)")
     
     def _authenticate(self):
         """Authenticate with Google Calendar API"""
@@ -95,6 +99,10 @@ class CalendarService:
         Create a new appointment in Google Calendar
         """
         try:
+            if settings.debug:
+                fake_id = f"debug_event_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                logger.info("DEBUG mode: Simulating calendar event creation", event_id=fake_id)
+                return fake_id
             if not self.service:
                 raise Exception("Google Calendar service not initialized")
             
@@ -160,6 +168,9 @@ class CalendarService:
         Check if the requested time slot is available
         """
         try:
+            if settings.debug:
+                logger.info("DEBUG mode: Simulating availability check", available=True)
+                return True
             if not self.service:
                 raise Exception("Google Calendar service not initialized")
             
@@ -211,6 +222,9 @@ class CalendarService:
         Get available time slots for a given date
         """
         try:
+            if settings.debug:
+                logger.info("DEBUG mode: Simulating available slots", date=date)
+                return ["09:00", "09:30", "10:00", "14:00", "14:30"]
             if not self.service:
                 raise Exception("Google Calendar service not initialized")
             
@@ -267,6 +281,9 @@ class CalendarService:
         Cancel an appointment
         """
         try:
+            if settings.debug:
+                logger.info("DEBUG mode: Simulating appointment cancellation", event_id=event_id)
+                return True
             if not self.service:
                 raise Exception("Google Calendar service not initialized")
             
@@ -298,6 +315,9 @@ class CalendarService:
         Update an existing appointment
         """
         try:
+            if settings.debug:
+                logger.info("DEBUG mode: Simulating appointment update", event_id=event_id)
+                return True
             if not self.service:
                 raise Exception("Google Calendar service not initialized")
             

@@ -148,9 +148,10 @@ async def get_interaction_stats(
             status_stats[status.value] = count
         
         # Get interactions by intent
+        from sqlalchemy import func
         intent_stats = db.query(
             Interaction.intent,
-            db.func.count(Interaction.id).label('count')
+            func.count(Interaction.id).label('count')
         ).filter(
             Interaction.created_at >= start_date,
             Interaction.intent.isnot(None)

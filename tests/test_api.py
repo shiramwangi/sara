@@ -96,7 +96,7 @@ class TestAdminEndpoints:
         """Test creating FAQ entry"""
         response = client.post(
             "/api/v1/admin/knowledge-base",
-            params={
+            json={
                 "question": sample_faq_data["question"],
                 "answer": sample_faq_data["answer"],
                 "keywords": sample_faq_data["keywords"],

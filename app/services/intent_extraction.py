@@ -7,6 +7,7 @@ import logging
 import structlog
 from datetime import datetime
 from typing import Optional, Dict, Any
+import asyncio
 import openai
 from openai import AsyncOpenAI
 
@@ -37,8 +38,8 @@ class IntentExtractionService:
             # Prepare the prompt for intent extraction
             prompt = self._build_intent_extraction_prompt(text, channel)
             
-            # Call OpenAI API
-            response = await self.client.chat.completions.create(
+            # Call OpenAI API (support both async client and test MagicMock)
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": self._get_system_prompt()},
@@ -48,6 +49,8 @@ class IntentExtractionService:
                 max_tokens=settings.max_tokens,
                 response_format={"type": "json_object"}
             )
+            if asyncio.iscoroutine(response):
+                response = await response
             
             # Parse the response
             result = json.loads(response.choices[0].message.content)
@@ -153,7 +156,7 @@ Extract information only if it's clearly stated or strongly implied.
             
             # Extract contact info
             contact_info = None
-            contact_data = result.get("contact_info", {})
+            contact_data = result.get("contact_info") or {}
             if any(contact_data.values()):
                 contact_info = ContactInfo(
                     name=contact_data.get("name"),
@@ -163,7 +166,7 @@ Extract information only if it's clearly stated or strongly implied.
             
             # Extract appointment details
             appointment = None
-            appointment_data = result.get("appointment", {})
+            appointment_data = result.get("appointment") or {}
             if appointment_data.get("date") and appointment_data.get("time"):
                 appointment = AppointmentSlot(
                     date=appointment_data["date"],
@@ -172,7 +175,7 @@ Extract information only if it's clearly stated or strongly implied.
                 )
             
             # Extract other slots
-            slots = result.get("slots", {})
+            slots = result.get("slots") or {}
             
             return IntentExtraction(
                 intent=intent,

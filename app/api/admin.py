@@ -137,12 +137,15 @@ async def list_knowledge_base(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+from fastapi import Body
+
+
 @router.post("/admin/knowledge-base")
 async def create_faq(
-    question: str,
-    answer: str,
-    keywords: List[str],
-    category: str = "general",
+    question: str = Body(...),
+    answer: str = Body(...),
+    keywords: List[str] = Body(...),
+    category: str = Body("general"),
     db: Session = Depends(get_db)
 ):
     """

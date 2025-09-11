@@ -5,6 +5,7 @@ Response Generation Service using OpenAI GPT-4
 import logging
 import structlog
 from typing import Optional, Dict, Any
+import asyncio
 import openai
 from openai import AsyncOpenAI
 
@@ -93,7 +94,7 @@ The message should:
 Generate the message:
 """
             
-            response = await self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": self._get_scheduling_system_prompt()},
@@ -102,6 +103,8 @@ Generate the message:
                 temperature=0.7,
                 max_tokens=300
             )
+            if asyncio.iscoroutine(response):
+                response = await response
             
             message = response.choices[0].message.content.strip()
             
@@ -147,7 +150,7 @@ Generate a helpful response for {settings.business_name} that:
 Generate the response:
 """
             
-            response = await self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": self._get_faq_system_prompt()},
@@ -156,6 +159,8 @@ Generate the response:
                 temperature=0.7,
                 max_tokens=300
             )
+            if asyncio.iscoroutine(response):
+                response = await response
             
             message = response.choices[0].message.content.strip()
             

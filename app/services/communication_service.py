@@ -10,7 +10,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from twilio.rest import Client as TwilioClient
-from twilio.twiml import VoiceResponse
+from twilio.twiml.voice_response import VoiceResponse
 
 from app.config import settings
 from app.models import ChannelType, ResponseMessage
@@ -59,6 +59,15 @@ class CommunicationService:
         Send WhatsApp message via Meta API
         """
         try:
+            # Short-circuit in debug mode to avoid external network calls during tests/dev
+            if settings.debug:
+                logger.info(
+                    "DEBUG mode: WhatsApp message not sent (simulated)",
+                    to_number=to_number,
+                    message_text=message_text[:120]
+                )
+                return True
+
             url = f"https://graph.facebook.com/v18.0/{self.whatsapp_phone_number_id}/messages"
             
             headers = {
@@ -108,6 +117,15 @@ class CommunicationService:
         Send SMS via Twilio
         """
         try:
+            # Short-circuit in debug mode to avoid external network calls during tests/dev
+            if settings.debug:
+                logger.info(
+                    "DEBUG mode: SMS not sent (simulated)",
+                    to_number=to_number,
+                    message_text=message_text[:120]
+                )
+                return True
+
             message = self.twilio_client.messages.create(
                 body=message_text,
                 from_=settings.twilio_phone_number,
@@ -132,6 +150,15 @@ class CommunicationService:
         Send email via SMTP
         """
         try:
+            # Short-circuit in debug mode to avoid external network calls during tests/dev
+            if settings.debug:
+                logger.info(
+                    "DEBUG mode: Email not sent (simulated)",
+                    to_email=to_email,
+                    subject=subject
+                )
+                return True
+
             # Create message
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
