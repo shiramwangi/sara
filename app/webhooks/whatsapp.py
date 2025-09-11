@@ -156,14 +156,14 @@ async def process_whatsapp_interaction(
             await handle_faq_intent(intent_result, interaction, db)
         
         # Update interaction with response
-        interaction.response_text = response.text
+        interaction.response_text = response["text"]
         interaction.status = InteractionStatus.COMPLETED
         
         # Send response back via WhatsApp
         comm_service = CommunicationService()
         await comm_service.send_whatsapp_message(
             to_number=webhook_request.from_number,
-            message_text=response.text
+            message_text=response["text"]
         )
         
         db.commit()
