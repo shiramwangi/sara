@@ -26,7 +26,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -44,9 +44,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Sara AI Receptionist", version="1.0.0")
     await init_db()
     logger.info("Database initialized successfully")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Sara AI Receptionist")
 
@@ -70,6 +70,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
@@ -79,16 +80,17 @@ async def global_exception_handler(request, exc):
         error=str(exc),
         path=request.url.path,
         method=request.method,
-        exc_info=True
+        exc_info=True,
     )
-    
+
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(
             error="Internal Server Error",
-            message="An unexpected error occurred. Please try again later."
-        ).dict()
+            message="An unexpected error occurred. Please try again later.",
+        ).dict(),
     )
+
 
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
@@ -98,6 +100,7 @@ app.include_router(voice.router, prefix="/webhook", tags=["webhooks"])
 app.include_router(whatsapp.router, prefix="/webhook", tags=["webhooks"])
 app.include_router(sms.router, prefix="/webhook", tags=["webhooks"])
 
+
 # Root endpoint
 @app.get("/")
 async def root():
@@ -106,16 +109,17 @@ async def root():
         "name": "Sara AI Receptionist",
         "version": "1.0.0",
         "status": "running",
-        "docs": "/docs" if settings.debug else "disabled"
+        "docs": "/docs" if settings.debug else "disabled",
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.debug,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

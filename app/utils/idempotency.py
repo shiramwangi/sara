@@ -24,20 +24,20 @@ async def check_idempotency(db: Session, call_id: str) -> bool:
         # Check in-memory cache first (skip during tests to allow repeated IDs)
         if call_id in processed_call_ids and not __debug__:
             return True
-        
+
         # Check database
-        existing_interaction = db.query(Interaction).filter(
-            Interaction.call_id == call_id
-        ).first()
-        
+        existing_interaction = (
+            db.query(Interaction).filter(Interaction.call_id == call_id).first()
+        )
+
         if existing_interaction:
             # Add to cache
             processed_call_ids.add(call_id)
             # During tests (DEBUG env often true), allow reprocessing in same run
             return not __debug__
-        
+
         return False
-        
+
     except Exception as e:
         logger.error("Error checking idempotency", call_id=call_id, error=str(e))
         return False
@@ -50,14 +50,14 @@ async def mark_processed(db: Session, call_id: str) -> None:
     try:
         # Add to in-memory cache
         processed_call_ids.add(call_id)
-        
+
         # Clean up old entries from cache (keep last 1000)
         if len(processed_call_ids) > 1000:
             # Remove oldest entries (simple cleanup)
             processed_call_ids.clear()
-        
+
         logger.debug("Call ID marked as processed", call_id=call_id)
-        
+
     except Exception as e:
         logger.error("Error marking call as processed", call_id=call_id, error=str(e))
 
@@ -71,6 +71,6 @@ async def cleanup_old_processed_ids() -> None:
         # For now, we'll just clear the in-memory cache periodically
         processed_call_ids.clear()
         logger.info("Cleaned up old processed IDs")
-        
+
     except Exception as e:
         logger.error("Error cleaning up processed IDs", error=str(e))

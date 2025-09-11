@@ -29,14 +29,14 @@ async def health_check(db: Session = Depends(get_db)):
         except Exception as e:
             logger.error("Database health check failed", error=str(e))
             db_connected = False
-        
+
         return HealthResponse(
             status="healthy" if db_connected else "unhealthy",
             timestamp=datetime.utcnow(),
             version="1.0.0",
-            database_connected=db_connected
+            database_connected=db_connected,
         )
-        
+
     except Exception as e:
         logger.error("Health check failed", error=str(e))
         raise HTTPException(status_code=500, detail="Health check failed")
