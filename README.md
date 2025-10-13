@@ -78,3 +78,6 @@ See `DEVELOPMENT.md` for detailed setup and development instructions.
 ## Example output
 
 <img width="663" height="161" alt="image" src="https://github.com/user-attachments/assets/79eb064a-3221-4c60-bd16-42c417b2b1fa" />
+
+contributors are me, and fatma
+
