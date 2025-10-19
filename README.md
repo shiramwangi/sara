@@ -79,5 +79,4 @@ See `DEVELOPMENT.md` for detailed setup and development instructions.
 
 <img width="663" height="161" alt="image" src="https://github.com/user-attachments/assets/79eb064a-3221-4c60-bd16-42c417b2b1fa" />
 
-contributors are me, and fatma
-
+This is a hybrid project with production goals
