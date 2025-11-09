@@ -17,7 +17,7 @@
 - ✅ If intent = schedule: verifies availability, creates Google Calendar event, returns confirmation
 - ✅ If intent = FAQ: answers from knowledge base and logs interaction
 - ✅ All runs are idempotent: repeated webhook with same callId is ignored/deduplicated
-- ✅ Easy to deploy: repo contains Dockerfile and deploy instructions
+- ✅ Easy to deploy: repo contains Dockerfile and deploy instructions.
 
 ## 🚀 Quick Start
 
